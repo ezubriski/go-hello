@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 
-	//"strings"
-
 	"github.com/twilio/twilio-go"
 	api "github.com/twilio/twilio-go/rest/api/v2010"
 )
@@ -19,38 +17,37 @@ send --times number PHONE NUMBER
 
 */
 
-func main() {
-	//body := strings.Repeat("♨", 255) fmt.Println(body)
-	//client := twilio.NewRestClient()
+type smsClient struct {
+	From   string
+	Client *twilio.RestClient
+}
 
-	//params := &api.CreateMessageParams{}
-	//params.SetFrom("+13853965242")
-	//params.SetBody(body)
-	//params.SetTo("+15415371994")
+func (c smsClient) Send(to string, body string) error {
 
-	//resp, err := client.Api.CreateMessage(params)
-	//if err != nil {
-	//fmt.Println(err.Error())
-	//} else {
-	//if resp.Sid != nil {
-	//fmt.Println(*resp.Sid)
-	//} else {
-	//fmt.Println(resp.Sid)
-	//}
-	//}
-
-	from := "13853965242"
-	to := "15032676296"
-
-	client := twilio.NewRestClient()
+	params := &api.CreateMessageParams{}
+	params.SetFrom(c.From)
+	params.SetBody(body)
+	params.SetTo(to)
+	resp, err := c.Client.Api.CreateMessage(params)
+	if err != nil {
+		return err
+	} else {
+		if resp.Sid != nil {
+			fmt.Println(*resp.Sid)
+		} else {
+			fmt.Println(resp.Sid)
+		}
+	}
+	return nil
+}
+func (c smsClient) List() error {
 
 	params := &api.ListMessageParams{}
-	params.SetFrom(from)
-	params.SetTo(to)
+	params.SetFrom(c.From)
+	//params.SetTo(to)
 	params.SetPageSize(20)
 	params.SetLimit(100)
-
-	resp, err := client.Api.ListMessage(params)
+	resp, err := c.Client.Api.ListMessage(params)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -61,8 +58,39 @@ func main() {
 		fmt.Println("")
 	}
 
-	//channel, _ := client.Api.StreamMessage(params)
-	//for record := range channel {
-	//fmt.Println("Body: ", *record.Body)
+	return nil
+}
+
+func main() {
+	body := "hello world"
+	client := twilio.NewRestClient()
+	from := "+13853965242"
+
+	sms := &smsClient{
+		From:   from,
+		Client: client,
+	}
+	sms.Send("+15032676296", body)
+	sms.List()
+
+	//params.SetTo("+15415371994")
+
+	// Set routing rules
+
+	//Use the default DefaultServeMux.
+	//err = http.ListenAndServe(":8080", nil)
+	//if err != nil {
+	//log.Fatal(err)
 	//}
+
+	//from := "13853965242"
+	//to := "15032676296"
+
+	//client := twilio.NewRestClient()
+
+	////channel, _ := client.Api.StreamMessage(params)
+	////for record := range channel {
+	////fmt.Println("Body: ", *record.Body)
+	////}
+
 }
